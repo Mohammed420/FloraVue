@@ -2,6 +2,7 @@
 
 ## Read requairements file to install crucial dependices
 ## FloraVueSketch have to be uploaded to own arduino device
+## You have to install the app.py file along with the start_app of choice as start_up doesnt have code for the moniotor it only start the app
 
 ## Overview
 
