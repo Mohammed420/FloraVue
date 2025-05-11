@@ -6,9 +6,32 @@ import streamlit as st
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy
+import platform
 
 # Initialization status
-ser = serial.Serial('/dev/ttyUSB0', 9600)  
+
+def get_serial_port():
+    system = platform.system()
+
+    if system == 'Windows':
+        return 'COM3'  # Change to your actual COM port (e.g., COM4, COM5)
+    elif system == 'Linux':
+        return '/dev/ttyUSB0'  # Or /dev/ttyACM0 depending on your device
+    elif system == 'Darwin':  # macOS
+        # Automatically find the first USB serial device
+        for device in os.listdir('/dev'):
+            if device.startswith('tty.usbserial') or device.startswith('tty.usbmodem'):
+                return os.path.join('/dev', device)
+        raise FileNotFoundError("No serial device found on macOS")
+    else:
+        raise EnvironmentError(f"Unsupported platform: {system}")
+
+# Use the detected port
+port = get_serial_port()
+ser = serial.Serial(port, 9600)
+print(f"Connected to {port}")  
+#End of platform port cheking
+
 csv_file = 'floraVue.csv'
 st.title('🌱 FloraVue plant monitoring dashboard')
 
@@ -131,10 +154,10 @@ while True:
         with ph1.container():#Index metric
             st.metric(label='Index', value=f"{x + last_index}")
         with ph2.container():# Temperature metric
-            st.metric(label=f'**🌡️ Temperature (C)**', value=str(sensor_data['Temperature']))
+            st.metric(label=f'**🌡️ Temperature (C)**', value=f"{sensor_data['Temperature']} °C")
             average_ph2.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_temp:.2f} Min: {min_temp} Max: {max_temp}°C</span>", unsafe_allow_html=True)
         with ph3.container():#Humidty metirc
-            st.metric(label='**💧 Humidity %**', value=str(sensor_data['Humidity']))
+            st.metric(label='**💧 Humidity %**', value=f"{sensor_data['Humidity']} %")
             average_ph3.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_hum:.2f} Min: {min_hum} Max: {max_hum}%</span>", unsafe_allow_html=True)
         with ph4.container():# Soil moisture metric
             st.metric(label='**🪴 Soil Moisture**', value=str(sensor_data['Soil Moisture']))
@@ -145,7 +168,7 @@ while True:
             average_ph5.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_air:.2f} Min: {min_air} Max: {max_air}</span>", unsafe_allow_html=True)
             st.markdown(f"<span style='font-size: 12px; color: gray;'>Lower is more quality</span>", unsafe_allow_html=True)
         with ph6.container():#Light intenseity metric
-            st.metric(label="**💡 Light Intensity**", value=str(sensor_data['Light']))
+            st.metric(label="**💡 Light Intensity**", value=f"{sensor_data['Light']} lx")
             average_ph6.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_lig:.2f} Min: {min_lig} Max: {max_lig}lx</span>", unsafe_allow_html=True)
         #End of metrics place holders
         
