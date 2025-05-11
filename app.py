@@ -37,6 +37,7 @@ st.title('🌱 FloraVue plant monitoring dashboard')
 
 ph1 = st.empty()  # PLACE HOLDERS with average then chart place holders
 average_ph1 = st.empty()
+# ph1_cond = st.empty()
 ph2 = st.empty()
 average_ph2 = st.empty()
 ph3 = st.empty()
@@ -150,19 +151,46 @@ while True:
         max_air = air_column.max()
         max_lig = lig_column.max()
         #----------------------------- End of avg min max
+        #Condtions
+        temp_cond = ""
+        hum_cond = ""
+        if(sensor_data["Temperature"] < 10):
+            temp_cond = "Cold"
+            color = 'blue'
+        elif(sensor_data["Temperature"] > 10 and sensor_data['Temperature'] <= 27):
+            temp_cond = "Normal"
+            color = 'green'
+        elif(sensor_data["Temperature"] >= 27.1): # >= 28
+            temp_cond = "Hot"
+            color = 'red'
+
+        if(sensor_data['Humidity'] < 30):
+            hum_cond = 'Low humidty'
+            hum_color = 'red'
+        elif(sensor_data['Humidity'] > 30 and sensor_data['Humidity'] <= 60):
+            hum_cond = 'Normal humidty'
+            hum_color = 'green'
+        elif(sensor_data['Humidity'] > 60.1):
+            hum_cond = 'High humidty'
+            hum_color = 'red'
+
+        soil_moist_percent = (800 - sensor_data['Soil Moisture']) / (800 - 200) * 100
+        
         # Update UI metrics
         with ph1.container():#Index metric
             st.metric(label='Index', value=f"{x + last_index}")
         with ph2.container():# Temperature metric
             st.metric(label=f'**🌡️ Temperature (C)**', value=f"{sensor_data['Temperature']} °C")
             average_ph2.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_temp:.2f} Min: {min_temp} Max: {max_temp}°C</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size: 16px; color: {color};'>{temp_cond}</span>", unsafe_allow_html=True)
+            
         with ph3.container():#Humidty metirc
             st.metric(label='**💧 Humidity %**', value=f"{sensor_data['Humidity']} %")
             average_ph3.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_hum:.2f} Min: {min_hum} Max: {max_hum}%</span>", unsafe_allow_html=True)
+            st.markdown(f"<span style='font-size: 16px; {hum_color};'>{hum_cond}</span>", unsafe_allow_html=True)
         with ph4.container():# Soil moisture metric
-            st.metric(label='**🪴 Soil Moisture**', value=str(sensor_data['Soil Moisture']))
+            st.metric(label='**🪴 Soil Moisture**', value=f'{str(round(soil_moist_percent, 2))}%')
             average_ph4.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_soil:.2f} Min: {min_soil} Max: {max_soil}</span>", unsafe_allow_html=True)
-            st.markdown("<span style='font-size: 12px; color: gray;'>Lower is more moist</span>", unsafe_allow_html=True)
         with ph5.container():#Air quality metric
             st.metric(label="**🌬️ Air Quality**", value=str(sensor_data['Air Quality']))
             average_ph5.markdown(f"<span style='font-size: 12px; color: gray;'>Avg: {average_air:.2f} Min: {min_air} Max: {max_air}</span>", unsafe_allow_html=True)
